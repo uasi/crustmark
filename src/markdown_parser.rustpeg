@@ -1,18 +1,20 @@
 #[pub]
-doc -> String
-  = heading { match_str.to_string() }
+doc -> Element
+  = heading
 
-heading
+heading -> Element
   = atx_heading
 
 atx_inline
   = !newline !(sp "#"* sp newline) xxx_simple_str
 
-atx_start
-  = "######" / "#####" / "####" / "###" / "##" / "#"
+atx_start -> Element
+  = ("######" / "#####" / "####" / "###" / "##" / "#")
+    { Element::new(Key::from_header_level(match_str.len())) }
 
-atx_heading
-  = atx_start sp atx_inline+ (sp "#"* sp)? newline
+atx_heading -> Element
+  = s:atx_start sp atx_inline+ (sp "#"* sp)? newline
+    { Element::new_with_children(s.key, vec![Element::new_text(match_str)]) }
 
 xxx_simple_str
   = [a-zA-Z0-9]+
