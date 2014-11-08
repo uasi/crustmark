@@ -29,6 +29,18 @@ impl Key {
             _ => unreachable!()
         }
     }
+
+    fn heading_level(&self) -> uint {
+        match self {
+            &H1 => 1,
+            &H2 => 2,
+            &H3 => 3,
+            &H4 => 4,
+            &H5 => 5,
+            &H6 => 6,
+            _   => unreachable!()
+        }
+    }
 }
 
 pub struct Element {
@@ -103,9 +115,9 @@ fn push_formatted_element(s: &mut String, elt: &Element) {
             push_formatted_elements(s, &elt.children);
         }
         H1 | H2 | H3 | H4 | H5 | H6 => {
-            s.push_str("<hX>"); // XXX needs level
+            s.push_str((format!("<h{}>", elt.key.heading_level())).as_slice());
             push_formatted_elements(s, &elt.children);
-            s.push_str("</hX>");
+            s.push_str((format!("</h{}>", elt.key.heading_level())).as_slice());
         }
         Plain => {
             push_formatted_elements(s, &elt.children);

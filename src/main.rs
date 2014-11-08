@@ -25,6 +25,6 @@ mod tests {
         let elt = doc.unwrap();
         assert_eq!(elt.key, markdown_parser::H3);
         assert_eq!(html_string_from_element(&elt).as_slice(),
-                   "<hX>Hello</hX>");
+                   "<h3>Hello</h3>");
     }
 }
