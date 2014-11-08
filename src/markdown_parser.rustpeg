@@ -13,7 +13,7 @@ atx_inline -> Element
 
 atx_start -> Element
   = ("######" / "#####" / "####" / "###" / "##" / "#")
-    { Element::new(Key::from_header_level(match_str.len())) }
+    { Element::new(Key::from_heading_level(match_str.len())) }
 
 atx_heading -> Element
   = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline

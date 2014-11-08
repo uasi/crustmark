@@ -18,7 +18,7 @@ pub enum Key {
 }
 
 impl Key {
-    fn from_header_level(u: uint) -> Key {
+    fn from_heading_level(u: uint) -> Key {
         match u {
             1 => H1,
             2 => H2,

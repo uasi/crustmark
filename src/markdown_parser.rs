@@ -20,7 +20,7 @@ pub enum Key {
 }
 
 impl Key {
-    fn from_header_level(u: uint) -> Key {
+    fn from_heading_level(u: uint) -> Key {
         match u {
             1 => H1,
             2 => H2,
@@ -369,7 +369,7 @@ fn parse_atx_start<'input>(input: &'input str, state: &mut ParseState,
                         let match_str = input.slice(start_pos, pos);
                         Matched(pos,
                                 {
-                                    Element::new(Key::from_header_level(match_str.len()))
+                                    Element::new(Key::from_heading_level(match_str.len()))
                                 })
                     }
                 }
