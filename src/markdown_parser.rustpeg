@@ -1,6 +1,9 @@
 #[pub]
 doc -> Element
-  = heading
+  = block
+
+block -> Element
+  = blank_line* (heading / para / plain)
 
 heading -> Element
   = atx_heading
@@ -16,9 +19,58 @@ atx_heading -> Element
   = s:atx_start sp atx_inline+ (sp "#"* sp)? newline
     { Element::new_with_children(s.key, vec![Element::new_text(match_str)]) }
 
+para -> Element
+  = nonindent_space a:inlines blank_line+
+    { a.put_key(Para) }
+
+plain -> Element
+  = a:inlines
+    { a.put_key(Plain) }
+
+inlines -> Element
+  = a:(!endline inline / e:endline &inline { e })+ endline?
+    { Element::new_list(a) }
+
+inline -> Element
+  = xxx_simple_text / endline
+
+xxx_simple_text -> Element
+  = xxx_simple_str { Element::new_text(match_str) }
+
 xxx_simple_str
   = [a-zA-Z0-9]+
 
-sp        = spacechar*
-spacechar = " " / "\t"
-newline   = "\n" / "\r" "\n"? { () }
+nonindent_space
+  = "   " / "  " / " " / ""
+
+endline -> Element
+  = line_break / terminal_endline / normal_endline
+
+normal_endline -> Element
+  = sp newline !blank_line !">" !atx_start
+    !(line ("="+ / "-"+) newline)
+    { Element::new_text("\n").put_key(Space) }
+
+terminal_endline -> Element
+  = sp newline eof { Element::new(Terminal) }
+
+line_break -> Element
+  = "  " normal_endline { Element::new(LineBreak) }
+
+blank_line = sp newline
+eof        = !.
+sp         = spacechar*
+spacechar  = " " / "\t"
+newline    = "\n" / "\r" "\n"? { () }
+
+line -> Element
+  = a:raw_line { Element::new_text(a.as_slice()) }
+
+raw_line -> String
+  = non_breaking_chars_and_newline / a:any_chars eof { a }
+
+non_breaking_chars_and_newline -> String
+  = (!"\r" !"\n" .)* newline { match_str.to_string() }
+
+any_chars -> String
+  = .+ { match_str.to_string() }

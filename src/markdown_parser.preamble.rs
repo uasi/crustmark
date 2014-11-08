@@ -2,13 +2,19 @@
 
 #[deriving(PartialEq, Show)]
 pub enum Key {
+    List,
+    Para,
+    Plain,
     Text,
+    LineBreak,
+    Space,
     H1,
     H2,
     H3,
     H4,
     H5,
-    H6
+    H6,
+    Terminal
 }
 
 impl Key {
@@ -40,6 +46,10 @@ impl Element {
         }
     }
 
+    fn new_list(children: Vec<Element>) -> Element {
+        Element::new_with_children(List, children)
+    }
+
     fn new_with_children(key: Key, children: Vec<Element>) -> Element {
         Element {
             key: key,
@@ -53,6 +63,14 @@ impl Element {
             key: Text,
             children: vec![],
             text: Some(s.to_string())
+        }
+    }
+
+    fn put_key(self, key: Key) -> Element {
+        Element {
+            key: key,
+            children: self.children,
+            text: self.text
         }
     }
 }
