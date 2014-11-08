@@ -8,16 +8,23 @@ fn main() {
 #[cfg(test)]
 mod tests {
     extern crate markdown_parser;
+    use markdown_parser::html_string_from_element;
 
     #[test]
     fn para() {
         let doc = markdown_parser::doc("Hello\nWorld\n\n");
-        assert_eq!(doc.unwrap().key, markdown_parser::Para);
+        let elt = doc.unwrap();
+        assert_eq!(elt.key, markdown_parser::Para);
+        assert_eq!(html_string_from_element(&elt).as_slice(),
+                   "<p>Hello\nWorld</p>");
     }
 
     #[test]
     fn atx_header_level3() {
         let doc = markdown_parser::doc("### Hello ###\n");
-        assert_eq!(doc.unwrap().key, markdown_parser::H3);
+        let elt = doc.unwrap();
+        assert_eq!(elt.key, markdown_parser::H3);
+        assert_eq!(html_string_from_element(&elt).as_slice(),
+                   "<hX>Hello</hX>");
     }
 }
