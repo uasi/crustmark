@@ -222,7 +222,7 @@ fn parse_heading<'input>(input: &'input str, state: &mut ParseState,
     parse_atx_heading(input, state, pos)
 }
 fn parse_atx_inline<'input>(input: &'input str, state: &mut ParseState,
-                            pos: uint) -> ParseResult<()> {
+                            pos: uint) -> ParseResult<Element> {
     {
         let seq_res =
             {
@@ -305,7 +305,7 @@ fn parse_atx_inline<'input>(input: &'input str, state: &mut ParseState,
                         };
                     match seq_res {
                         Matched(pos, _) => {
-                            parse_xxx_simple_str(input, state, pos)
+                            parse_xxx_simple_text(input, state, pos)
                         }
                         Failed => Failed,
                     }
@@ -411,11 +411,12 @@ fn parse_atx_heading<'input>(input: &'input str, state: &mut ParseState,
                                                 }
                                             }
                                             if repeat_value.len() >= 1u {
-                                                Matched(repeat_pos, ())
+                                                Matched(repeat_pos,
+                                                        repeat_value)
                                             } else { Failed }
                                         };
                                     match seq_res {
-                                        Matched(pos, _) => {
+                                        Matched(pos, i) => {
                                             {
                                                 let seq_res =
                                                     match {
@@ -509,12 +510,7 @@ fn parse_atx_heading<'input>(input: &'input str, state: &mut ParseState,
                                                                         Matched(pos,
                                                                                 {
                                                                                     Element::new_with_children(s.key,
-                                                                                                               vec!(Element
-                                                                                                                    ::
-                                                                                                                    new_text
-                                                                                                                    (
-                                                                                                                    match_str
-                                                                                                                    )))
+                                                                                                               i)
                                                                                 })
                                                                     }
                                                                 }

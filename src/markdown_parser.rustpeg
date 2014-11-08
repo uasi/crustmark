@@ -8,16 +8,16 @@ block -> Element
 heading -> Element
   = atx_heading
 
-atx_inline
-  = !newline !(sp "#"* sp newline) xxx_simple_str
+atx_inline -> Element
+  = !newline !(sp "#"* sp newline) xxx_simple_text
 
 atx_start -> Element
   = ("######" / "#####" / "####" / "###" / "##" / "#")
     { Element::new(Key::from_header_level(match_str.len())) }
 
 atx_heading -> Element
-  = s:atx_start sp atx_inline+ (sp "#"* sp)? newline
-    { Element::new_with_children(s.key, vec![Element::new_text(match_str)]) }
+  = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline
+    { Element::new_with_children(s.key, i) }
 
 para -> Element
   = nonindent_space a:inlines blank_line+
