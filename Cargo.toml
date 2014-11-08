@@ -3,3 +3,10 @@
 name = "rust-markdown"
 version = "0.0.1"
 authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
+
+[[bin]]
+name = "rust-markdown"
+path = "src/main.rs"
+
+[lib]
+name = "markdown_parser"
