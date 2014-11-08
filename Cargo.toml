@@ -1,0 +1,5 @@
+[package]
+
+name = "rust-markdown"
+version = "0.0.1"
+authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
