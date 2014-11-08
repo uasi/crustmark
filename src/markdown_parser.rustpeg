@@ -1,0 +1,22 @@
+#[pub]
+doc -> String
+  = heading { match_str.to_string() }
+
+heading
+  = atx_heading
+
+atx_inline
+  = !newline !(sp "#"* sp newline) xxx_simple_str
+
+atx_start
+  = "######" / "#####" / "####" / "###" / "##" / "#"
+
+atx_heading
+  = atx_start sp atx_inline+ (sp "#"* sp)? newline
+
+xxx_simple_str
+  = [a-zA-Z0-9]+
+
+sp        = spacechar*
+spacechar = " " / "\t"
+newline   = "\n" / "\r" "\n"? { () }
