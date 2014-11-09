@@ -8,7 +8,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crustmark;
-    use crustmark::parse::html_string_from_element;
+    use crustmark::format::html_string_from_element;
 
     #[test]
     fn para() {
