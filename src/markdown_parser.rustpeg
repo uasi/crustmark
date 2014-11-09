@@ -3,7 +3,11 @@ doc -> Element
   = block
 
 block -> Element
-  = blank_line* (heading / para / plain)
+  = blank_line*
+    ( block_quote
+    / heading
+    / para
+    / plain )
 
 heading -> Element
   = atx_heading
@@ -18,6 +22,25 @@ atx_start -> Element
 atx_heading -> Element
   = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline
     { Element::new_with_children(s.key, i) }
+
+block_quote -> Element
+  = a:block_quote_raw
+    { Element::new_with_children(BlockQuote, vec![a]) }
+
+block_quote_raw -> Element
+  = a:block_quote_raw_chunk+
+    { Element::new_text(a.concat().as_slice()).put_key(Raw) }
+
+block_quote_raw_chunk -> String
+  = a:( ">" " "? line )
+    b:( !">" !blank_line line )*
+    c:( blank_line { "\n" } )*
+    {
+        let mut strs = vec![a.text_as_slice()];
+        strs.extend(b.iter().map(|e| e.text_as_slice()));
+        strs.push_all(c.as_slice());
+        strs.concat()
+    }
 
 para -> Element
   = nonindent_space a:inlines blank_line+

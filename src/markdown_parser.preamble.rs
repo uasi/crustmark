@@ -6,6 +6,8 @@ pub enum Key {
     Para,
     Plain,
     Text,
+    BlockQuote,
+    Raw,
     LineBreak,
     Space,
     H1,
@@ -126,6 +128,15 @@ fn push_formatted_element(s: &mut String, elt: &Element) {
             s.push_str("<p>");
             push_formatted_elements(s, &elt.children);
             s.push_str("</p>");
+        }
+        BlockQuote => {
+            s.push_str("<blockquote>\n");
+            push_formatted_elements(s, &elt.children);
+            s.push_str("</blockquote>\n");
+        }
+        Raw => {
+            // XXX should have been processed before calling this method
+            s.push_str(elt.text_as_slice());
         }
         Terminal => {
         }
