@@ -1,4 +1,4 @@
-extern crate  markdown_parser;
+mod crustmark;
 
 #[cfg(not(test))]
 fn main() {
@@ -7,23 +7,23 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    extern crate markdown_parser;
-    use markdown_parser::html_string_from_element;
+    use crustmark;
+    use crustmark::parse::html_string_from_element;
 
     #[test]
     fn para() {
-        let doc = markdown_parser::doc("Hello\nWorld\n\n");
+        let doc = crustmark::parse::doc("Hello\nWorld\n\n");
         let elt = doc.unwrap();
-        assert_eq!(elt.key, markdown_parser::Para);
+        assert_eq!(elt.key, crustmark::parse::Para);
         assert_eq!(html_string_from_element(&elt).as_slice(),
                    "<p>Hello\nWorld</p>");
     }
 
     #[test]
     fn atx_header_level3() {
-        let doc = markdown_parser::doc("### Hello ###\n");
+        let doc = crustmark::parse::doc("### Hello ###\n");
         let elt = doc.unwrap();
-        assert_eq!(elt.key, markdown_parser::H3);
+        assert_eq!(elt.key, crustmark::parse::H3);
         assert_eq!(html_string_from_element(&elt).as_slice(),
                    "<h3>Hello</h3>");
     }

@@ -1,12 +1,9 @@
 [package]
 
-name = "rust-markdown"
+name = "crustmark"
 version = "0.0.1"
 authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
 
 [[bin]]
-name = "rust-markdown"
+name = "crustmark"
 path = "src/main.rs"
-
-[lib]
-name = "markdown_parser"
