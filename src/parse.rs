@@ -2,8 +2,8 @@
 // You may want to edit parse.rustpeg or parse.preamble.rs.
 #![allow(non_snake_case, unused)]
 
-use super::data::{Element, Key};
-use super::data::{
+use data::{Element, Key};
+use data::{
     List,
     Para,
     Plain,
