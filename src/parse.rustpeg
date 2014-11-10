@@ -21,11 +21,11 @@ atx_start -> Element
 
 atx_heading -> Element
   = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline
-    { Element::new_with_children(s.key, i) }
+    { Element::with_children(s.key, i) }
 
 block_quote -> Element
   = a:block_quote_raw
-    { Element::new_with_children(BlockQuote, vec![a]) }
+    { Element::with_children(BlockQuote, vec![a]) }
 
 block_quote_raw -> Element
   = a:block_quote_raw_chunk+

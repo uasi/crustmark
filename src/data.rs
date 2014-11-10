@@ -58,16 +58,16 @@ impl Element {
         }
     }
 
-    pub fn new_list(children: Vec<Element>) -> Element {
-        Element::new_with_children(List, children)
-    }
-
-    pub fn new_with_children(key: Key, children: Vec<Element>) -> Element {
+    pub fn with_children(key: Key, children: Vec<Element>) -> Element {
         Element {
             key: key,
             children: children,
             text: None
         }
+    }
+
+    pub fn new_list(children: Vec<Element>) -> Element {
+        Element::with_children(List, children)
     }
 
     pub fn new_text(s: &str) -> Element {
@@ -89,7 +89,7 @@ impl Element {
     pub fn text_as_slice<'a>(&'a self) -> &'a str {
         match self.text {
             Some(ref t) => t.as_slice(),
-            None    => ""
+            None => ""
         }
     }
 }
