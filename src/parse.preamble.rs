@@ -7,6 +7,7 @@ use data::{
     Plain,
     Text,
     BlockQuote,
+    Verbatim,
     Raw,
     LineBreak,
     Space,

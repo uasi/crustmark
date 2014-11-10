@@ -9,6 +9,7 @@ use data::{
     Plain,
     Text,
     BlockQuote,
+    Verbatim,
     Raw,
     LineBreak,
     Space,
@@ -97,17 +98,27 @@ fn parse_block<'input>(input: &'input str, state: &mut ParseState, pos: uint)
                     match choice_res {
                         Matched(pos, value) => Matched(pos, value),
                         Failed => {
-                            let choice_res = parse_heading(input, state, pos);
+                            let choice_res =
+                                parse_verbatim(input, state, pos);
                             match choice_res {
                                 Matched(pos, value) => Matched(pos, value),
                                 Failed => {
                                     let choice_res =
-                                        parse_para(input, state, pos);
+                                        parse_heading(input, state, pos);
                                     match choice_res {
                                         Matched(pos, value) =>
                                         Matched(pos, value),
-                                        Failed =>
-                                        parse_plain(input, state, pos),
+                                        Failed => {
+                                            let choice_res =
+                                                parse_para(input, state, pos);
+                                            match choice_res {
+                                                Matched(pos, value) =>
+                                                Matched(pos, value),
+                                                Failed =>
+                                                parse_plain(input, state,
+                                                            pos),
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -411,8 +422,8 @@ fn parse_atx_heading<'input>(input: &'input str, state: &mut ParseState,
                                                                                         pos);
                                                                         Matched(pos,
                                                                                 {
-                                                                                    Element::new_with_children(s.key,
-                                                                                                               i)
+                                                                                    Element::with_children(s.key,
+                                                                                                           i)
                                                                                 })
                                                                     }
                                                                 }
@@ -450,8 +461,8 @@ fn parse_block_quote<'input>(input: &'input str, state: &mut ParseState,
                         let match_str = input.slice(start_pos, pos);
                         Matched(pos,
                                 {
-                                    Element::new_with_children(BlockQuote,
-                                                               vec!(a))
+                                    Element::with_children(BlockQuote,
+                                                           vec!(a))
                                 })
                     }
                 }
@@ -670,6 +681,136 @@ fn parse_block_quote_raw_chunk<'input>(input: &'input str,
                 }
                 Failed => Failed,
             }
+        }
+    }
+}
+fn parse_verbatim<'input>(input: &'input str, state: &mut ParseState,
+                          pos: uint) -> ParseResult<Element> {
+    {
+        let start_pos = pos;
+        {
+            let seq_res =
+                {
+                    let mut repeat_pos = pos;
+                    let mut repeat_value = vec!();
+                    loop  {
+                        let pos = repeat_pos;
+                        let step_res =
+                            parse_verbatim_chunk(input, state, pos);
+                        match step_res {
+                            Matched(newpos, value) => {
+                                repeat_pos = newpos;
+                                repeat_value.push(value);
+                            }
+                            Failed => { break ; }
+                        }
+                    }
+                    if repeat_value.len() >= 1u {
+                        Matched(repeat_pos, repeat_value)
+                    } else { Failed }
+                };
+            match seq_res {
+                Matched(pos, a) => {
+                    {
+                        let match_str = input.slice(start_pos, pos);
+                        Matched(pos,
+                                {
+                                    Element::new_text(a.concat().as_slice()).put_key(Verbatim)
+                                })
+                    }
+                }
+                Failed => Failed,
+            }
+        }
+    }
+}
+fn parse_verbatim_chunk<'input>(input: &'input str, state: &mut ParseState,
+                                pos: uint) -> ParseResult<String> {
+    {
+        let start_pos = pos;
+        {
+            let seq_res =
+                {
+                    let mut repeat_pos = pos;
+                    let mut repeat_value = vec!();
+                    loop  {
+                        let pos = repeat_pos;
+                        let step_res = parse_blank_line(input, state, pos);
+                        match step_res {
+                            Matched(newpos, value) => {
+                                repeat_pos = newpos;
+                                repeat_value.push(value);
+                            }
+                            Failed => { break ; }
+                        }
+                    }
+                    Matched(repeat_pos, repeat_value)
+                };
+            match seq_res {
+                Matched(pos, a) => {
+                    {
+                        let seq_res =
+                            {
+                                let mut repeat_pos = pos;
+                                let mut repeat_value = vec!();
+                                loop  {
+                                    let pos = repeat_pos;
+                                    let step_res =
+                                        parse_nonblank_indented_line(input,
+                                                                     state,
+                                                                     pos);
+                                    match step_res {
+                                        Matched(newpos, value) => {
+                                            repeat_pos = newpos;
+                                            repeat_value.push(value);
+                                        }
+                                        Failed => { break ; }
+                                    }
+                                }
+                                if repeat_value.len() >= 1u {
+                                    Matched(repeat_pos, repeat_value)
+                                } else { Failed }
+                            };
+                        match seq_res {
+                            Matched(pos, b) => {
+                                {
+                                    let match_str =
+                                        input.slice(start_pos, pos);
+                                    Matched(pos,
+                                            {
+                                                let mut v =
+                                                    Vec::from_elem(a.len(),
+                                                                   "\n");
+                                                v.extend(b.iter().map(|elt|
+                                                                          elt.text_as_slice()));
+                                                v.concat().to_string()
+                                            })
+                                }
+                            }
+                            Failed => Failed,
+                        }
+                    }
+                }
+                Failed => Failed,
+            }
+        }
+    }
+}
+fn parse_nonblank_indented_line<'input>(input: &'input str,
+                                        state: &mut ParseState, pos: uint) ->
+ ParseResult<Element> {
+    {
+        let seq_res =
+            {
+                let assert_res = parse_blank_line(input, state, pos);
+                match assert_res {
+                    Failed => Matched(pos, ()),
+                    Matched(..) => Failed,
+                }
+            };
+        match seq_res {
+            Matched(pos, _) => { parse_indented_line(input, state, pos) }
+            Failed => Failed,
         }
     }
 }
@@ -1374,6 +1515,26 @@ fn parse_newline<'input>(input: &'input str, state: &mut ParseState,
                     }
                 }
             }
+        }
+    }
+}
+fn parse_indent<'input>(input: &'input str, state: &mut ParseState, pos: uint)
+ -> ParseResult<()> {
+    {
+        let choice_res = slice_eq(input, state, pos, "\t");
+        match choice_res {
+            Matched(pos, value) => Matched(pos, value),
+            Failed => slice_eq(input, state, pos, "    "),
+        }
+    }
+}
+fn parse_indented_line<'input>(input: &'input str, state: &mut ParseState,
+                               pos: uint) -> ParseResult<Element> {
+    {
+        let seq_res = parse_indent(input, state, pos);
+        match seq_res {
+            Matched(pos, _) => { parse_line(input, state, pos) }
+            Failed => Failed,
         }
     }
 }

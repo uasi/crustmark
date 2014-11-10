@@ -5,6 +5,7 @@ doc -> Element
 block -> Element // key = mixed
   = blank_line*
     ( block_quote
+    / verbatim
     / heading
     / para
     / plain )
@@ -41,6 +42,22 @@ block_quote_raw_chunk -> String // raw Markdown string
         strs.push_all(c.as_slice());
         strs.concat()
     }
+
+verbatim -> Element // key = Verbatim, text = verbatim chunks
+  = a:verbatim_chunk+
+    { Element::new_text(a.concat().as_slice()).put_key(Verbatim) }
+
+verbatim_chunk -> String
+  = a:blank_line*
+    b:nonblank_indented_line+
+    {
+        let mut v = Vec::from_elem(a.len(), "\n");
+        v.extend(b.iter().map(|elt| elt.text_as_slice()));
+        v.concat().to_string()
+    }
+
+nonblank_indented_line -> Element // key = Text, text = indented_line
+  = !blank_line indented_line
 
 para -> Element // key = Para, children = [inline | endline, ..]
   = nonindent_space a:inlines blank_line+
@@ -86,7 +103,11 @@ sp         = spacechar*
 spacechar  = " " / "\t"
 newline    = "\n" / "\r" "\n"? { () }
 
-line -> Element // key = Text
+indent = "\t" / "    "
+indented_line -> Element // key = Text, text = line
+  = indent line
+
+line -> Element // key = Text, text = raw_line
   = a:raw_line { Element::new_text(a.as_slice()) }
 
 raw_line -> String

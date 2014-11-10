@@ -30,4 +30,13 @@ mod tests {
         assert_eq!(html_string_from_element(&elt).as_slice(),
                    "<h3>Hello</h3>");
     }
+
+    #[test]
+    fn verbatim() {
+        let doc = parse::doc("    Hello\n    World\n");
+        let elt = doc.unwrap();
+        assert_eq!(elt.key, data::Verbatim);
+        assert_eq!(html_string_from_element(&elt).as_slice(),
+                   "<pre><code>Hello\nWorld\n</code></pre>");
+    }
 }

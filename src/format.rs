@@ -5,6 +5,7 @@ use data::{
     Plain,
     Text,
     BlockQuote,
+    Verbatim,
     Raw,
     LineBreak,
     Space,
@@ -54,6 +55,11 @@ fn push_formatted_element(s: &mut String, elt: &Element) {
             s.push_str("<blockquote>\n");
             push_formatted_elements(s, &elt.children);
             s.push_str("</blockquote>\n");
+        }
+        Verbatim => {
+            s.push_str("<pre><code>");
+            s.push_str(elt.text_as_slice());
+            s.push_str("</code></pre>");
         }
         Raw => {
             // XXX should have been processed before calling this method
