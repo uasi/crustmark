@@ -8,6 +8,7 @@ use data::{
     Text,
     BlockQuote,
     Verbatim,
+    HorizontalRule,
     Raw,
     LineBreak,
     Space,

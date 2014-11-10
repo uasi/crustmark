@@ -6,6 +6,7 @@ pub enum Key {
     Text,
     BlockQuote,
     Verbatim,
+    HorizontalRule,
     Raw,
     LineBreak,
     Space,

@@ -6,6 +6,7 @@ use data::{
     Text,
     BlockQuote,
     Verbatim,
+    HorizontalRule,
     Raw,
     LineBreak,
     Space,
@@ -60,6 +61,9 @@ fn push_formatted_element(s: &mut String, elt: &Element) {
             s.push_str("<pre><code>");
             s.push_str(elt.text_as_slice());
             s.push_str("</code></pre>");
+        }
+        HorizontalRule => {
+            s.push_str("<hr />");
         }
         Raw => {
             // XXX should have been processed before calling this method

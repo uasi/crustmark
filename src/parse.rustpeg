@@ -6,12 +6,13 @@ block -> Element // key = mixed
   = blank_line*
     ( block_quote
     / verbatim
+    / horizontal_rule
     / heading
     / para
     / plain )
 
-heading -> Element
-  = atx_heading
+heading -> Element // key = H1..H6
+  = setext_heading / atx_heading
 
 atx_inline -> Element // key = Text
   = !newline !(sp "#"* sp newline) xxx_simple_text
@@ -23,6 +24,25 @@ atx_start -> Element // key = H1..H6
 atx_heading -> Element // key = H1..H6, children = [atx_inline, ..]
   = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline
     { Element::with_children(s.key, i) }
+
+setext_heading -> Element // key = H1 | H2
+  = setext_heading1 / setext_heading2
+
+setext_heading1 -> Element // key = H1, children = [inline, ..]
+  = &( raw_line setext_bottom1 )
+    a:( !endline inline )+ sp newline
+    setext_bottom1
+    { Element::with_children(H1, a) }
+
+setext_heading2 -> Element // key = H2, children = [inline, ..]
+  = &( raw_line setext_bottom2 )
+    a:( !endline inline )+ sp newline
+    setext_bottom1
+    { Element::with_children(H2, a) }
+
+setext_bottom1 = "="+ newline
+
+setext_bottom2 = "-"+ newline
 
 block_quote -> Element // key = BlockQuote, children = [block_quote_raw]
   = a:block_quote_raw
@@ -58,6 +78,15 @@ verbatim_chunk -> String
 
 nonblank_indented_line -> Element // key = Text, text = indented_line
   = !blank_line indented_line
+
+horizontal_rule -> Element // key = HorizontalRule
+  = nonindent_space
+    ( "*" sp "*" sp "*" (sp "*")*
+    / "-" sp "-" sp "-" (sp "-")*
+    / "_" sp "_" sp "_" (sp "_")* )
+    sp newline blank_line
+    { Element::new(HorizontalRule) }
+
 
 para -> Element // key = Para, children = [inline | endline, ..]
   = nonindent_space a:inlines blank_line+

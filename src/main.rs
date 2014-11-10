@@ -32,11 +32,29 @@ mod tests {
     }
 
     #[test]
+    fn setext_heading1() {
+        let doc = parse::doc("Hello\n===\n");
+        let elt = doc.unwrap();
+        assert_eq!(elt.key, data::H1);
+        assert_eq!(html_string_from_element(&elt).as_slice(),
+                   "<h1>Hello</h1>");
+    }
+
+    #[test]
     fn verbatim() {
         let doc = parse::doc("    Hello\n    World\n");
         let elt = doc.unwrap();
         assert_eq!(elt.key, data::Verbatim);
         assert_eq!(html_string_from_element(&elt).as_slice(),
                    "<pre><code>Hello\nWorld\n</code></pre>");
+    }
+
+    #[test]
+    fn horizontal_rule() {
+        let doc = parse::doc("---\n\n");
+        let elt = doc.unwrap();
+        assert_eq!(elt.key, data::HorizontalRule);
+        assert_eq!(html_string_from_element(&elt).as_slice(),
+                   "<hr />");
     }
 }
