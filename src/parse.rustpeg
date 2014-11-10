@@ -2,7 +2,7 @@
 doc -> Element
   = block
 
-block -> Element
+block -> Element // key = mixed
   = blank_line*
     ( block_quote
     / heading
@@ -12,26 +12,26 @@ block -> Element
 heading -> Element
   = atx_heading
 
-atx_inline -> Element
+atx_inline -> Element // key = Text
   = !newline !(sp "#"* sp newline) xxx_simple_text
 
-atx_start -> Element
+atx_start -> Element // key = H1..H6
   = ("######" / "#####" / "####" / "###" / "##" / "#")
     { Element::new(Key::from_heading_level(match_str.len())) }
 
-atx_heading -> Element
+atx_heading -> Element // key = H1..H6, children = [atx_inline, ..]
   = s:atx_start sp i:atx_inline+ (sp "#"* sp)? newline
     { Element::with_children(s.key, i) }
 
-block_quote -> Element
+block_quote -> Element // key = BlockQuote, children = [block_quote_raw]
   = a:block_quote_raw
     { Element::with_children(BlockQuote, vec![a]) }
 
-block_quote_raw -> Element
+block_quote_raw -> Element // key = Raw, text = raw Markdown string
   = a:block_quote_raw_chunk+
     { Element::new_text(a.concat().as_slice()).put_key(Raw) }
 
-block_quote_raw_chunk -> String
+block_quote_raw_chunk -> String // raw Markdown string
   = a:( ">" " "? line )
     b:( !">" !blank_line line )*
     c:( blank_line { "\n" } )*
@@ -42,22 +42,22 @@ block_quote_raw_chunk -> String
         strs.concat()
     }
 
-para -> Element
+para -> Element // key = Para, children = [inline | endline, ..]
   = nonindent_space a:inlines blank_line+
     { a.put_key(Para) }
 
-plain -> Element
+plain -> Element // key = Plain, children = [inline | endline, ..]
   = a:inlines
     { a.put_key(Plain) }
 
-inlines -> Element
+inlines -> Element // key = List, children = [inline | endline, ..]
   = a:(!endline inline / e:endline &inline { e })+ endline?
     { Element::new_list(a) }
 
-inline -> Element
+inline -> Element // key = Text | endline-ish, text = simple text | endline-ish
   = xxx_simple_text / endline
 
-xxx_simple_text -> Element
+xxx_simple_text -> Element // type = Text, text = simple text
   = xxx_simple_str { Element::new_text(match_str) }
 
 xxx_simple_str
@@ -66,18 +66,18 @@ xxx_simple_str
 nonindent_space
   = "   " / "  " / " " / ""
 
-endline -> Element
+endline -> Element // key = LineBreak | Terminal | Space, text = endline-ish
   = line_break / terminal_endline / normal_endline
 
-normal_endline -> Element
+normal_endline -> Element // key = Space, text = "\n"
   = sp newline !blank_line !">" !atx_start
     !(line ("="+ / "-"+) newline)
     { Element::new_text("\n").put_key(Space) }
 
-terminal_endline -> Element
+terminal_endline -> Element // key = Terminal
   = sp newline eof { Element::new(Terminal) }
 
-line_break -> Element
+line_break -> Element // key = LineBreak
   = "  " normal_endline { Element::new(LineBreak) }
 
 blank_line = sp newline
@@ -86,7 +86,7 @@ sp         = spacechar*
 spacechar  = " " / "\t"
 newline    = "\n" / "\r" "\n"? { () }
 
-line -> Element
+line -> Element // key = Text
   = a:raw_line { Element::new_text(a.as_slice()) }
 
 raw_line -> String
