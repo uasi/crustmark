@@ -23,7 +23,7 @@ mod tests {
     }
 
     #[test]
-    fn atx_header_level3() {
+    fn atx_heading3() {
         let doc = parse::doc("### Hello ###\n");
         let elt = doc.unwrap();
         assert_eq!(elt.key, data::H3);
